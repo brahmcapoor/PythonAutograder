@@ -1,5 +1,5 @@
 import sys
-from autograder_utils import StatusMessage
+from .autograder_utils import StatusMessage
 
 
 def check_syntax_import(module_name):

@@ -1,6 +1,6 @@
 import inspect
 
-from autograder_utils import StatusMessage
+from .autograder_utils import StatusMessage
 
 
 class StyleChecker:

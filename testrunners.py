@@ -10,7 +10,7 @@ import io
 import contextlib
 import traceback
 
-from autograder_utils import StatusMessage, TestFailHandlers
+from .autograder_utils import StatusMessage, TestFailHandlers
 
 
 class FunctionTestRunner():

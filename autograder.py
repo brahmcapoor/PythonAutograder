@@ -1,9 +1,9 @@
 import doctest
 import unittest
 
-from autograder_utils import StatusMessage, print_header
-from filehandlers import check_syntax_import
-from stylechecker import StyleChecker
+from .autograder_utils import StatusMessage, print_header
+from .filehandlers import check_syntax_import
+from .stylechecker import StyleChecker
 
 
 class AutoGrader:
