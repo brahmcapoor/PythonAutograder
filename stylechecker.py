@@ -1,6 +1,6 @@
 import inspect
 
-from python_autograder.autograder_utils import StatusMessage
+from autograder_utils import StatusMessage
 
 
 class StyleChecker:
@@ -8,6 +8,7 @@ class StyleChecker:
     A very rudimentary and initial attempt at checking
     a program's style.
 
+    #TODO limit verbosity of line checks
     #TODO check variable name lengths
     #TODO some measure of decomposition
     #TODO check recursion
