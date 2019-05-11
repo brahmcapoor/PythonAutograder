@@ -2,13 +2,12 @@
 A collection of test runner objects intended to
 facilitate checking student output against the
 solution on a variety of inputs.
-
-# TODO make an arglist class?
 """
 
 import io
 import contextlib
 import traceback
+import multiprocessing
 
 from .autograder_utils import StatusMessage, TestFailHandlers
 
@@ -29,6 +28,41 @@ class FunctionTestRunner():
 
     def add_arglist(self, arglist):
         self.arglist.extend(arglist)
+
+    def single_test(self, i, fail_handler, fn_name, args, kwargs):
+        f = io.StringIO()
+        with contextlib.redirect_stdout(f):
+            param_str = FunctionTestRunner._make_param_str(args, kwargs)
+            print(f"Testing {fn_name}({param_str})...".ljust(64), end="")
+            try:
+                student_out, soln_out = self._get_outputs(i)
+                if (student_out == soln_out):
+                    print(StatusMessage("Test passed!", "SUCCESS"))
+                else:
+                    print(StatusMessage("Test failed!", "FAIL"))
+                    if fail_handler:
+                        fail_handler(student_out, soln_out)
+            except Exception as error:
+                # rip
+                print(StatusMessage(f"Test Crashed: {error}", "FAIL"))
+                print(traceback.format_exc())
+        return f.getvalue()
+
+    def run_parallel_tests(self, fail_handler=TestFailHandlers.base_fail_handler):
+        fn_name = self.student_fn.__name__
+        print(StatusMessage(f"\n\nTesting {fn_name}...", "INFO"))
+        print("-" * 70)
+
+        pool = multiprocessing.Pool(processes=4)
+        results = [
+            pool.apply_async(
+                self.single_test,
+                args=(i, fail_handler, fn_name, args, kwargs)
+            ) for i, (args, kwargs) in enumerate(self.arglist)
+        ]
+        output = [result.get() for result in results]
+        for out in output:
+            print(out)
 
     def run_tests(self, fail_handler=TestFailHandlers.base_fail_handler):
         """

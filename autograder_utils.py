@@ -27,12 +27,25 @@ class StatusMessage():
 
     def __init__(self, message, message_type):
         self.message = message
-        self.type = message_type
+        self.colored_message = self.colors[message_type] + \
+            self.message + self.colors["ENDC"]
 
     def __str__(self):
-        if platform.system() == 'Windows': # Windows is the worst
+        if platform.system() == 'Windows':  # Windows is the worst
             return self.message
-        return self.colors[self.type] + self.message + self.colors["ENDC"]
+        else:
+            return self.colored_message
+
+    def __iadd__(self, other):
+        self.message += " " + other.message
+        self.colored_message += " " + other.colored_message
+        return self
+
+    def __add__(self, other):
+        if platform.system() == 'Windows':
+            return self.message + " " + other.message
+        else:
+            return self.colored_message + " " + other.colored_message
 
 
 class TestFailHandlers():
@@ -51,10 +64,10 @@ class TestFailHandlers():
         print(f"Expected output: {soln_out}")
 
     @staticmethod
-    def show_diff(student_out, soln_out, num_diffs_to_show=3):
+    def show_console_diff(student_out, soln_out, num_diffs_to_show=3):
         """
         Test fail handler for dealing with multiline
-        text output
+        console output
         """
         s1 = student_out.split("\n")
         s2 = soln_out.split("\n")
@@ -73,6 +86,22 @@ class TestFailHandlers():
                 print(f"Student output:  {student_line}")
                 print(f"Expected output: {soln_line}")
         print("")
+
+    @staticmethod
+    def show_image_diff(student_out, soln_out):
+        s1 = student_out.split("\n")
+        s2 = soln_out.split("\n")
+
+        assert len(s1) == len(
+            s2), f"Images are different sizes! Student image has {len(s1)} pixels and solution image has {len(s2)} pixels"
+
+        num_different = 0
+        for student_line, soln_line in zip(s1, s2):
+            if student_line != soln_line:
+                num_different += 1
+
+        print(StatusMessage(
+            f"{num_different}/{len(s1)} pixels are different", "INFO"))
 
 
 def print_header(text):

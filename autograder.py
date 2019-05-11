@@ -14,8 +14,12 @@ class AutoGrader:
     will be overridden.
     """
 
-    def __init__(self, module_name, has_doctests=True,
-                 has_additional_tests=False, has_stylecheck=True):
+    def __init__(self,
+                 module_name,
+                 has_doctests=True,
+                 has_additional_tests=False,
+                 has_stylecheck=True,
+                 has_additional_stylecheck=False):
         """
         the last 3 allow us to control which kinds of tests
         we run
@@ -26,6 +30,9 @@ class AutoGrader:
         self.has_doctests = has_doctests
         self.has_additional_tests = has_additional_tests
         self.has_stylecheck = has_stylecheck
+        self.has_additional_stylecheck = has_additional_stylecheck
+
+        self.checker = StyleChecker(self.module)
 
     def _run_doctests(self):
         print(StatusMessage(
@@ -43,8 +50,10 @@ class AutoGrader:
         )
         )
         print("-"*70)
-        checker = StyleChecker(self.module)
-        checker.check_style()
+        self.checker.check_style()
+
+    def _run_additional_stylecheck(self):
+        raise NotImplementedError("run_additional_stylecheck not implemented")
 
     def run_tests(self):
         if self.has_doctests:
@@ -53,3 +62,5 @@ class AutoGrader:
             self._run_additional_tests()
         if self.has_stylecheck:
             self._run_stylecheck()
+        if self.has_additional_stylecheck:
+            self._run_additional_stylecheck()
