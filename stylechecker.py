@@ -94,4 +94,4 @@ class StyleChecker:
             print(StatusMessage("Okay!", "SUCCESS"))
         else:
             print(StatusMessage(
-                f"Expected at least {min_required}, only found {len(self.function_list)}", "FAIL"))
+                f"Expected at least {min_required}, only found {len(num_doctests)}", "FAIL"))
