@@ -29,10 +29,11 @@ class FunctionTestRunner():
     def add_arglist(self, arglist):
         self.arglist.extend(arglist)
 
-    def single_test(self, i, fail_handler, fn_name, args, kwargs):
+    def single_test(self, i, fail_handler, fn_name, args, kwargs, param_summary):
         f = io.StringIO()
         with contextlib.redirect_stdout(f):
-            param_str = FunctionTestRunner._make_param_str(args, kwargs)
+            param_str = FunctionTestRunner._make_param_str(
+                args, kwargs, param_summary)
             print(f"Testing {fn_name}({param_str})...".ljust(64), end="")
             try:
                 student_out, soln_out = self._get_outputs(i)
@@ -57,8 +58,8 @@ class FunctionTestRunner():
         results = [
             pool.apply_async(
                 self.single_test,
-                args=(i, fail_handler, fn_name, args, kwargs)
-            ) for i, (args, kwargs) in enumerate(self.arglist)
+                args=(i, fail_handler, fn_name, args, kwargs, param_summary)
+            ) for i, (args, kwargs, param_summary) in enumerate(self.arglist)
         ]
         output = [result.get() for result in results]
         for out in output:
@@ -72,8 +73,9 @@ class FunctionTestRunner():
         fn_name = self.student_fn.__name__
         print(StatusMessage(f"\n\nTesting {fn_name}...", "INFO"))
         print("-" * 70)
-        for i, (args, kwargs) in enumerate(self.arglist):
-            param_str = FunctionTestRunner._make_param_str(args, kwargs)
+        for i, (args, kwargs, param_summary) in enumerate(self.arglist):
+            param_str = FunctionTestRunner._make_param_str(
+                args, kwargs, param_summary)
             print(f"Testing {fn_name}({param_str})...".ljust(64), end="")
 
             try:
@@ -90,7 +92,7 @@ class FunctionTestRunner():
                 print(traceback.format_exc())
 
     def _get_outputs(self, i):
-        args, kwargs = self.arglist[i]
+        args, kwargs, _ = self.arglist[i]
         return self.student_fn(*args, **kwargs), self.soln_fn(*args, **kwargs)
 
     def __iter__(self):
@@ -105,11 +107,14 @@ class FunctionTestRunner():
         return ret
 
     @staticmethod
-    def _make_param_str(args, kwargs):
+    def _make_param_str(args, kwargs, param_summary=None):
         args_str_list = [repr(a) for a in args]
         kwargs_str_list = [f"{repr(k)}={repr(v)}" for k, v in kwargs.items()]
         params_str_list = args_str_list + kwargs_str_list
-        return ", ".join(params_str_list)
+        with_commas = ", ".join(params_str_list)
+        if len(with_commas) > 50:
+            return param_summary if param_summary else "...many arguments..."
+        return with_commas
 
 
 class CapturedFunctionTestRunner(FunctionTestRunner):
